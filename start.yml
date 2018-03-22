@@ -1,0 +1,17 @@
+## start nentropy
+#- hosts: nentropy
+#  tasks:
+#    - name: start monitor
+#      shell:
+#          "{{source_dir }}/build/bin/nentropy_monitor -idx 1 -mons 127.0.0.1:12315,127.0.0.1:22315,127.0.0.1:32315 -memberBindPort 7946 -advertiseAddr 127.0.0.1:12315"
+- hosts: monitor_1
+  tasks:
+      - name: start monitor leader
+        shell:
+            screen -d -m {{ source_dir }}/build/bin/nentropy_monitor -idx {{ idx }}  -mons {{ all_monitors }} -memberBindPort {{ leader_monitor_listen }} -advertiseAddr {{ leader_monitor }}:{{ leader_monitor_port }}
+
+- hosts: monitor_others
+  tasks:
+      - name: start others monitor
+        shell:
+            screen -d -m {{ source_dir }}/build/bin/nentropy_monitor -idx {{ idx }}  -mons {{ all_monitors }} -joinMemberAddr {{ leader_monitor }}:{{ leader_monitor_listen }} -advertiseAddr {{ leader_monitor }}:{{ leader_monitor_port }}

@@ -1,0 +1,14 @@
+# Build nentropy
+#- name: downlaod nentroy
+#  shell:
+#      if ! [ -d {{ source_dir }} ]; then
+#          {{ go }} get -u github.com/journeymidnight/nentropy > /Users/bamvor/1;
+#      fi
+#    - name: downlaod nentroy
+#      shell:
+#          "{{ go }} get -v -u github.com/journeymidnight/nentropy > /Users/bamvor/1"
+- hosts: build
+  tasks:
+    - name: build nentropy
+      shell:
+          cd {{ source_dir }}; make GO={{ go }}
