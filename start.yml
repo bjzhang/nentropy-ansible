@@ -8,10 +8,23 @@
   tasks:
       - name: start monitor leader
         shell:
-            screen -d -m {{ source_dir }}/build/bin/nentropy_monitor -idx {{ idx }}  -mons {{ all_monitors }} -memberBindPort {{ leader_monitor_listen }} -advertiseAddr {{ leader_monitor }}:{{ leader_monitor_port }}
+            screen -d -m {{ source_dir }}/build/bin/nentropy_monitor -idx {{ idx }}  -mons {{ all_monitors }} -memberBindPort {{ leader_monitor_listen }} -advertiseAddr {{ leader_monitor }}:{{ leader_monitor_port }} -baseDir {{ basedir }}
 
 - hosts: monitor_others
   tasks:
       - name: start others monitor
         shell:
-            screen -d -m {{ source_dir }}/build/bin/nentropy_monitor -idx {{ idx }}  -mons {{ all_monitors }} -joinMemberAddr {{ leader_monitor }}:{{ leader_monitor_listen }} -advertiseAddr {{ leader_monitor }}:{{ leader_monitor_port }}
+            screen -d -m {{ source_dir }}/build/bin/nentropy_monitor -idx {{ idx }}  -mons {{ all_monitors }} -joinMemberAddr {{ leader_monitor }}:{{ leader_monitor_listen }} -advertiseAddr {{ leader_monitor }}:{{ leader_monitor_port }} -baseDir {{ basedir }};
+            sleep 2
+
+- hosts: osds
+  tasks:
+      - name: add osd
+        shell:  "{{ source_dir }}/build/bin/nentropy_admin -t osd -c add -id {{ idx }} -server_addr {{ leader_monitor }}:{{ leader_monitor_port }}"
+      - name: get osd in state
+        shell:
+            '{{ source_dir }}/build/bin/nentropy_admin -t osd -c list -server_addr {{ leader_monitor }}:{{ leader_monitor_port }} | grep "^id: {{ idx }}" -A 6 | grep "^in:"'
+        register: osd_state
+      - name: check osd state
+        shell:
+        when: "osd_state.rc == 0"
