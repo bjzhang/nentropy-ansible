@@ -21,10 +21,25 @@
   tasks:
       - name: add osd
         shell:  "{{ source_dir }}/build/bin/nentropy_admin -t osd -c add -id {{ idx }} -server_addr {{ leader_monitor }}:{{ leader_monitor_port }}"
+        register: add_osd_cmd_status
+      - name: check osd cmd status
+        fail:
+         msg: 'osd add state command fail {{ osd_state.stderr }}'
+        when: "add_osd_cmd_status.failed"
       - name: get osd in state
         shell:
-            '{{ source_dir }}/build/bin/nentropy_admin -t osd -c list -server_addr {{ leader_monitor }}:{{ leader_monitor_port }} | grep "^id: {{ idx }}" -A 6 | grep "^in:"'
+            '{{ source_dir }}/build/bin/nentropy_admin -t osd -c list -server_addr {{ leader_monitor }}:{{ leader_monitor_port }} | grep "^id: {{ idx }}" -A 6 | grep "^in:" | sed "s/\ //g" | cut -d : -f 2'
         register: osd_state
       - name: check osd state
-        shell:
+        debug:
+         msg: osd add state is '{{ osd_state.stdout }}'
         when: "osd_state.rc == 0"
+      - name: check osd state fail
+        fail:
+         msg: "osd add failed"
+        when: osd_state.stdout != 'true'
+      - name: check osd state successful
+        debug:
+          msg: "osd add successful"
+        when: osd_state.stdout == 'true'
+
