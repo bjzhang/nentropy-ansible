@@ -42,4 +42,8 @@
         debug:
           msg: "osd add successful"
         when: osd_state.stdout == 'true'
+      - name: start osd
+        shell:
+            screen -d -m {{ source_dir }}/build/bin/nentropy_osd -nodeID {{ idx }} -joinMemberAddr {{ leader_monitor }}:{{ leader_monitor_listen }};
+            sleep 2
 
