@@ -4,6 +4,15 @@
 #    - name: start monitor
 #      shell:
 #          "{{source_dir }}/build/bin/nentropy_monitor -idx 1 -mons 127.0.0.1:12315,127.0.0.1:22315,127.0.0.1:32315 -memberBindPort 7946 -advertiseAddr 127.0.0.1:12315"
+- hosts: all
+  tasks:
+      - name: Copy log.sh to remote
+        copy:
+        src: log.sh
+        dest: /home/{{ user }}/bin/log.sh
+        owner: {{ user }}
+        group: {{ user }}
+        mode: u=rwx,g=rx,o=rx
 - hosts: monitor_1
   tasks:
       - name: start monitor leader
